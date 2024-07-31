@@ -1,0 +1,39 @@
+/* src/components/Navbar.css */
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #333333; /* Darker background for better contrast */
+    padding: 1rem;
+    color: white;
+  }
+  
+  .brand {
+    font-size: 1.5rem;
+    color: #ffffff;
+  }
+  
+  .nav-links {
+    list-style-type: none;
+    display: flex;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .nav-item {
+    margin: 0 1rem;
+  }
+  
+
+  .link{
+    color: green; 
+    /* text-decoration: none; */
+    /* transition: color 0.3s ease; */
+    
+  }
+   
+  .link:hover {
+    color: #ffdd57; /* Add a hover effect to improve interactivity */
+  }
+  
