@@ -1,0 +1,28 @@
+.sidebar-container {
+  position: fixed;
+  right: 0;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  z-index: 40; /* Ensure the sidebar stays above other content */
+  transition: transform 0.3s ease;
+}
+
+.sidebar {
+  width: 250px;
+  background-color: #f4f4f4;
+  padding: 1rem;
+  height: 100vh;
+  overflow-y: auto;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+  transform: translateX(100%);
+}
+
+.sidebar-container.open .sidebar {
+  transform: translateX(0);
+}
+
+.burger-icon {
+  font-size: 24px;
+  cursor: pointer;
+}

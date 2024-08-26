@@ -1,0 +1,69 @@
+f you read the code you realize that this is a calendar application. What i want to do is 
+-> it takes real time to show on the calendar
+-> I want  to integrate this to a backend using FastAPI and MYSQL
+-> I want one admin page that only admin can access and can upload details of employees (Name, EmailId, Employee Id, Phone Number, Manager, Manager Id) in a table called Employee in the database.  
+-> after entering all the employee names it should auto generate a table named as "{employee id}_Task_Sheet" for each employee that has the attribute [Task Title, Assigned Date, Todays date, Assigned by, Completed Date,Priority]
+->So in the react frontend we see that in < div className="bg-white text-center border rounded-md shadow-sm col-span-1 flex-grow flex items-start justify-end p-2 h-full"> it has dates of the calendar. Each of this should act like a button, onClick creates a modal page which lets one edit the table called as  "{employee id}_Task_Sheet" where the there a input text box for the label "Text Title", Assigned Date has text box with date on which they clicked which can be changed and Assigned by is the user. the assigned date and Todays date has same value
+->right side bar reads the tasks from "{employee id}_Task_Sheet" and shows the task whose todays date matches the current date
+-> each of these task shown in the rightSidebar when clicked give two option, "Completed" and "Forwarded", When Completed is clicked then that task row in the table "{employee id}_Task_Sheet" is updated, where completed date is the date when the completed button is clicked
+-> "{employee id}_Task_Sheet" this table access should be given to the employee whose emploee id it belongs to, their manager, their manager's manager and so on till the admin
+->"{employee id}_Task_Sheet" in this table at the early in the morning 12.00am all the task whose "Completed Date" attributes has no value their, Todays date is update to the current date
+Help me achieve all this by giving me the detailed step by step process of ll the chnages tht i have to do in the react project, generate the fastapi codes and all the code relevant to the backend and the database, step by step process of setting up the backend and fastapi and running the fastapi server,the code changes in cal.jsx, RightSideBarr.jsx, the modal popup and all other changes in the frontend the location of each file
+
+
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import ParentComponent from './components/ParentComponent';
+import AdminPage from './components/AdminPage';  // Import the AdminPage
+import ProtectedRoute from './components/ProtectedRoute';
+
+const App = () => {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<ParentComponent />} />
+        <Route path="/admin" element={
+          <ProtectedRoute role="admin">  // Assuming ProtectedRoute can check roles
+            <AdminPage />
+          </ProtectedRoute>
+        } />
+      </Routes>
+    </BrowserRouter>
+  );
+};
+
+export default App;
+import React from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
+
+const ProtectedRoute = ({ children, role }) => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    const isAuthenticated = user && user.authToken;  // Example check for authentication
+    const isAuthorized = role ? user.role === role : true;  // Role check
+
+    const location = useLocation();
+
+    if (!isAuthenticated || !isAuthorized) {
+        return <Navigate to="/login" state={{ from: location }} />;
+    }
+
+    return children;
+};
+
+export default ProtectedRoute;
+import React from 'react';
+import { Link } from 'react-router-dom';
+
+const Navbar = () => {
+  return (
+    <nav>
+      <ul>
+        <li><Link to="/">Home</Link></li>
+        <li><Link to="/admin">Admin</Link></li>
+        {/* Other navigation links */}
+      </ul>
+    </nav>
+  );
+};
+
+export default Navbar;
