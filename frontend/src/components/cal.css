@@ -1,0 +1,60 @@
+.calendar {
+  width: 100vw; /* Full viewport width */
+  height: calc(100vh - 50px); /* Full height minus navbar */
+  margin: 0; /* Remove any margin to fit perfectly */
+  display: flex;
+  flex-direction: column; /* Ensures structured layout */
+}
+
+.header {
+  padding: 10px;
+  display: flex;
+  justify-content: space-around; /* Centers the select elements with space around */
+  background-color: #f4f4f4; /* Gives a distinct background */
+  width:20%;
+}
+
+.day-names {
+  display: flex;
+  background-color: #e4e4e4; /* Slightly different background for day names */
+}
+
+
+
+
+.day-names .day-name {
+  flex: 1; /* Distributes space evenly among days */
+  text-align: center;
+  padding: 10px 0; /* Padding for better visual spacing */
+}
+
+.date-grid {
+  flex-grow: 1; /* Allows the date grid to fill available space */
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+}
+
+.date-grid .empty-slot, .date-grid .date-button {
+  flex: 0 0 14.28%; /* Exact width to fit 7 across */
+  height: 12.5%; /* Each button will take up roughly 1/8th of the available height, fitting about 8 rows vertically */
+}
+
+.date-grid .date-button {
+  border: none;
+  background-color: #f0f0f0;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  border: 3px;
+  border-color: black;
+  align-items: center; /* Centers the date numerically */
+  transition: background-color 0.3s; /* Smooth transition for hover effect */
+}
+.date-button.today {
+  background-color: #0048ff ; /* Green background for today */
+  color: white; /* White text color for better visibility */
+}
+.date-grid .date-button:hover {
+  background-color: #ddd;
+}
