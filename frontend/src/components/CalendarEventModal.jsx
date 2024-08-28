@@ -73,8 +73,9 @@ const CalendarEventModal = ({ isVisible, onClose, selectedDate }) => {
             </label>
           </div>
           <div className="form-control">
-            <textarea placeholder="Note" name="notes" value={eventDetails.notes} onChange={handleChange}></textarea>
             <textarea placeholder="To-Do List" name="todoList" value={eventDetails.todoList} onChange={handleChange}></textarea>
+            <textarea placeholder="Note" name="notes" value={eventDetails.notes} onChange={handleChange}></textarea>
+            
           </div>
           <div className="form-actions">
             <button type="button" onClick={handleCancel} className="cancel-button">Cancel</button>
