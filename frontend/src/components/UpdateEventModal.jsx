@@ -1,71 +1,82 @@
 import React, { useState, useEffect } from 'react';
 import './CEM.css';
 
-const CalendarEventModal = ({ isVisible, onClose, selectedDate }) => {
-  const [eventDetails, setEventDetails] = useState({
+const UpdateEventModal = ({ isVisible, onClose, eventDetails }) => {
+  const [eventData, setEventData] = useState({
     title: '',
     date: '',
     url: '',
+    files: [],
     notes: '',
     todoList: [],
-    priority: 1  // Default priority to 1
+    priority: 1
   });
 
   useEffect(() => {
-    if (selectedDate) {
-      const formattedDate = formatDate(selectedDate);
-      setEventDetails(prev => ({ ...prev, date: formattedDate }));
+    if (eventDetails) {
+      setEventData({
+        title: eventDetails.title || '',
+        date: eventDetails.date || '',
+        url: eventDetails.url || '',
+        files: eventDetails.files || [],
+        notes: eventDetails.notes || '',
+        todoList: eventDetails.todoList || [],
+        priority: eventDetails.priority || 1
+      });
     }
-  }, [selectedDate]);
-
-  const formatDate = (date) => {
-    const d = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
-    return d.toISOString().split('T')[0].split('-').reverse().join('/');
-  };
+  }, [eventDetails]);
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setEventDetails(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+    const { name, value, type, checked, files } = e.target;
+    if (type === 'file') {
+      setEventData(prev => ({ ...prev, [name]: files }));
+    } else {
+      setEventData(prev => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      }));
+    }
   };
 
   const handleSliderChange = (e) => {
-    setEventDetails(prev => ({ ...prev, priority: e.target.value }));
+    setEventData(prev => ({ ...prev, priority: e.target.value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Saving Event Details:', eventDetails);
 
     const formData = new FormData();
-    formData.append('title', eventDetails.title);
-    formData.append('date', eventDetails.date);
-    formData.append('priority', eventDetails.priority);
-    formData.append('url', eventDetails.url);
-    formData.append('notes', eventDetails.notes);
-    formData.append('todoList', JSON.stringify(eventDetails.todoList));
+    formData.append('title', eventData.title);
+    formData.append('date', eventData.date);
+    formData.append('url', eventData.url);
+    formData.append('notes', eventData.notes);
+    formData.append('todoList', JSON.stringify(eventData.todoList));
+    formData.append('priority', eventData.priority);
+
+    if (eventData.files.length > 0) {
+      for (let i = 0; i < eventData.files.length; i++) {
+        formData.append('files', eventData.files[i]);
+      }
+    }
 
     try {
-      const response = await fetch('http://localhost:8000/events', {
-        method: 'POST',
+      const response = await fetch(`http://localhost:8000/events/${eventDetails.id}`, {
+        method: 'PUT',
         body: formData
       });
 
       if (response.ok) {
-        console.log('Event created successfully!');
+        console.log('Event updated successfully!');
         onClose();
       } else {
-        console.error('Failed to create event');
+        console.error('Failed to update event');
       }
     } catch (error) {
-      console.error('Error creating event:', error);
+      console.error('Error updating event:', error);
     }
   };
 
   const handleCancel = () => {
-    setEventDetails(prev => ({ ...prev, title: '' }));
     onClose();
   };
 
@@ -80,7 +91,7 @@ const CalendarEventModal = ({ isVisible, onClose, selectedDate }) => {
               type="text"
               placeholder="Title"
               name="title"
-              value={eventDetails.title}
+              value={eventData.title}
               onChange={handleChange}
               required
             />
@@ -90,7 +101,7 @@ const CalendarEventModal = ({ isVisible, onClose, selectedDate }) => {
             <input
               type="text"
               name="date"
-              value={eventDetails.date}
+              value={eventData.date}
               onChange={handleChange}
               required
             />
@@ -100,9 +111,19 @@ const CalendarEventModal = ({ isVisible, onClose, selectedDate }) => {
               type="text"
               placeholder="URL"
               name="url"
-              value={eventDetails.url}
+              value={eventData.url}
               onChange={handleChange}
             />
+          </div>
+          <div className="form-control">
+            <label>Attach files
+              <input
+                type="file"
+                name="files"
+                multiple
+                onChange={handleChange}
+              />
+            </label>
           </div>
           <div className="form-control">
             <label>Priority:</label>
@@ -110,22 +131,22 @@ const CalendarEventModal = ({ isVisible, onClose, selectedDate }) => {
               type="range"
               min="1"
               max="5"
-              value={eventDetails.priority}
+              value={eventData.priority}
               onChange={handleSliderChange}
             />
-            <span>{eventDetails.priority}</span>
+            <span>{eventData.priority}</span>
           </div>
           <div className="form-control">
             <textarea
               placeholder="To-Do List"
               name="todoList"
-              value={eventDetails.todoList}
+              value={eventData.todoList}
               onChange={handleChange}
             ></textarea>
             <textarea
               placeholder="Note"
               name="notes"
-              value={eventDetails.notes}
+              value={eventData.notes}
               onChange={handleChange}
             ></textarea>
           </div>
@@ -139,7 +160,7 @@ const CalendarEventModal = ({ isVisible, onClose, selectedDate }) => {
             </button>
             <button
               type="submit"
-              disabled={!eventDetails.title.trim()}
+              disabled={!eventData.title.trim()}
               className="save-button"
             >
               Save
@@ -151,4 +172,4 @@ const CalendarEventModal = ({ isVisible, onClose, selectedDate }) => {
   );
 };
 
-export default CalendarEventModal;
+export default UpdateEventModal;

@@ -1,11 +1,13 @@
+/* RightSideBar.css */
 .sidebar-container {
   position: fixed;
   right: 0;
   top: 0;
-  height: 100vh;
+  height: calc(100vh - 50px);
   display: flex;
-  z-index: 40; /* Ensure the sidebar stays above other content */
+  z-index: 40;
   transition: transform 0.3s ease;
+  padding-top: 55px;
 }
 
 .sidebar {
@@ -18,11 +20,39 @@
   transform: translateX(100%);
 }
 
+h3.TaskTitle{
+  padding-top: 45px;
+}
 .sidebar-container.open .sidebar {
   transform: translateX(0);
 }
 
-.burger-icon {
-  font-size: 24px;
+.event-item {
+  margin-bottom: 1rem;
+}
+.tick-icon {
+  height: 1em;
+  width: auto;
+  margin-right: 5px; /* Space between the icon and the text */
+  vertical-align: middle; /* Align the icon with the middle of the text */
+}
+.event-title {
+  font-size: 16px;
+  background-color: #fff;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+
+.event-actions {
+  margin-top: 0.5rem;
+}
+
+.event-actions button {
+  margin-right: 0.5rem;
+  padding: 0.3rem 0.5rem;
+  font-size: 14px;
   cursor: pointer;
 }
