@@ -3,7 +3,7 @@ import Calendar1 from './cal';
 import RightSideBar from './RightSideBar';
 import Navbar from './Navbar';
 import UpdateEventModal from './UpdateEventModal';
-import CalendarEventModal from './CalendarEventModal';  // This is the correct import
+import CalendarEventModal from './CalendarEventModal';  
 
 const ParentComponent = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);

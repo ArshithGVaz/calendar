@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './FollowUpModal.css';  // You can create a new CSS file for this or reuse existing styles
+import './FollowUpModal.css';  
 
 const FollowUpModal = ({ isVisible, onClose, task, onFollowUp }) => {
   const [followUpDate, setFollowUpDate] = useState('');
@@ -7,7 +7,7 @@ const FollowUpModal = ({ isVisible, onClose, task, onFollowUp }) => {
 
   const handleDateChange = (e) => {
     setFollowUpDate(e.target.value);
-    setError('');  // Clear any previous error messages
+    setError('');  
   };
 
   const handleSubmit = async (e) => {
@@ -21,7 +21,6 @@ const FollowUpModal = ({ isVisible, onClose, task, onFollowUp }) => {
       return;
     }
 
-    // Construct the follow-up event data
     const followUpEvent = {
       title: `Follow up of ${task.title}`,
       date: followUpDate,
@@ -29,7 +28,7 @@ const FollowUpModal = ({ isVisible, onClose, task, onFollowUp }) => {
       url: task.url,
       notes: task.notes,
       todoList: task.todoList,
-      status: 'Pending',  // Assuming follow-up starts as pending
+      status: 'Pending',  
     };
 
     try {
@@ -43,8 +42,8 @@ const FollowUpModal = ({ isVisible, onClose, task, onFollowUp }) => {
 
       if (response.ok) {
         console.log('Follow-up event created successfully!');
-        onFollowUp();  // Callback to refresh or update the UI after the follow-up event is created
-        onClose();  // Close the modal after successful submission
+        onFollowUp();  
+        onClose(); 
       } else {
         console.error('Failed to create follow-up event');
       }
@@ -54,7 +53,7 @@ const FollowUpModal = ({ isVisible, onClose, task, onFollowUp }) => {
   };
 
   const handleCancel = () => {
-    onClose();  // Close the modal without submitting
+    onClose(); 
   };
 
   if (!isVisible) return null;

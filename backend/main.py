@@ -5,9 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 import mysql.connector
 
-
 app = FastAPI()
-
 
 origins = ["*"]
 
@@ -26,9 +24,9 @@ db_config = {
     'database': 'your_database'
 }
 
+
 def format_date_to_ddmmyyyy(date_str):
     return datetime.strptime(date_str, '%Y-%m-%d').strftime('%d/%m/%Y')
-
 @app.post("/events")
 async def create_event(
     title: str = Form(...),
@@ -39,20 +37,16 @@ async def create_event(
     todoList: Optional[str] = Form(None),
     status: Optional[str] = Form(None), 
 ):
-
     connection = mysql.connector.connect(**db_config)
     cursor = connection.cursor()
-
     try:
-  
+
         query = """
         INSERT INTO events (title, date, priority, url, notes, todoList, status)
         VALUES (%s, %s, %s, %s, %s, %s, %s)
         """
         cursor.execute(query, (title, date, priority, url, notes, todoList, status))
         connection.commit()
-
-
         return JSONResponse(content={"message": "Event created successfully!"}, status_code=201)
     except Exception as e:
         connection.rollback()
@@ -60,6 +54,7 @@ async def create_event(
     finally:
         cursor.close()
         connection.close()
+
 
 @app.put("/events/{event_id}")
 async def update_event(
@@ -74,7 +69,6 @@ async def update_event(
 ):
     connection = mysql.connector.connect(**db_config)
     cursor = connection.cursor()
-
     try:
         query = """
         UPDATE events 
@@ -83,8 +77,6 @@ async def update_event(
         """
         cursor.execute(query, (title, date, priority, url, notes, todoList, event_id))
         connection.commit()
-
-
         return JSONResponse(content={"message": "Event updated successfully!"}, status_code=200)
     except Exception as e:
         connection.rollback()
@@ -93,20 +85,18 @@ async def update_event(
         cursor.close()
         connection.close()
 
+
 @app.patch("/events/{event_id}/complete")
 async def mark_event_as_completed(event_id: int = Path(..., title="The ID of the event to be marked as completed")):
     connection = mysql.connector.connect(**db_config)
     cursor = connection.cursor()
-
     try:
-  
+
         query = "UPDATE events SET status = 'Completed' WHERE id = %s"
         cursor.execute(query, (event_id,))
         connection.commit()
-
         if cursor.rowcount == 0:
             raise HTTPException(status_code=404, detail="Event not found")
-
         return JSONResponse(content={"message": "Event marked as completed successfully!"}, status_code=200)
     except Exception as e:
         connection.rollback()
@@ -114,20 +104,16 @@ async def mark_event_as_completed(event_id: int = Path(..., title="The ID of the
     finally:
         cursor.close()
         connection.close()
-
 @app.delete("/events/{event_id}")
 async def delete_event(event_id: int = Path(..., title="The ID of the event to delete")):
     connection = mysql.connector.connect(**db_config)
     cursor = connection.cursor()
-
     try:
         query = "DELETE FROM events WHERE id = %s"
         cursor.execute(query, (event_id,))
         connection.commit()
-
         if cursor.rowcount == 0:
             raise HTTPException(status_code=404, detail="Event not found")
-
         return JSONResponse(content={"message": "Event deleted successfully!"}, status_code=200)
     except Exception as e:
         connection.rollback()
@@ -135,28 +121,21 @@ async def delete_event(event_id: int = Path(..., title="The ID of the event to d
     finally:
         cursor.close()
         connection.close()
-
 @app.get("/sidebar")
 async def get_events():
     connection = mysql.connector.connect(**db_config)
     cursor = connection.cursor(dictionary=True)
-
     today = datetime.now().strftime('%d/%m/%Y')
     
     try:
         cursor.execute("SELECT * FROM events WHERE DATE_FORMAT(date, '%%d/%%m/%%Y') = %s AND url IS NULL", (today,))
         tasks = cursor.fetchall()
-
         cursor.execute("SELECT * FROM events WHERE DATE_FORMAT(date, '%%d/%%m/%%Y') = %s AND url IS NOT NULL", (today,))
         meetings = cursor.fetchall()
-
-
         cursor.execute("SELECT * FROM events WHERE status = 'Pending'")
         following_up = cursor.fetchall()
-
         for event in tasks + meetings + following_up:
             event['date'] = format_date_to_ddmmyyyy(event['date'])
-
         result = {
             "Today": {
                 "tasks": tasks,
@@ -164,11 +143,9 @@ async def get_events():
                 "following_up": following_up
             }
         }
-
         return JSONResponse(content=result)
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
     finally:
         cursor.close()
         connection.close()
-    

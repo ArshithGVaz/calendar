@@ -18,7 +18,7 @@ const RightSideBar = ({ isOpen, onUpdate }) => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch('http://localhost:8000/sidebar');
+        const response = await fetch('http://localhost:8080/sidebar');
         const data = await response.json();
         setEventsData(data);
       } catch (error) {
@@ -43,7 +43,7 @@ const RightSideBar = ({ isOpen, onUpdate }) => {
 
   const handleFollowUpSubmit = () => {
     setIsFollowUpModalVisible(false);
-    // Optionally refresh the data
+    
   };
 
   const handleCompleted = async (event) => {

@@ -60,7 +60,7 @@ const UpdateEventModal = ({ isVisible, onClose, eventDetails }) => {
     }
 
     try {
-      const response = await fetch(`http://localhost:8000/events/${eventDetails.id}`, {
+      const response = await fetch(`http://localhost:8080/events/${eventDetails.id}`, {
         method: 'PUT',
         body: formData
       });

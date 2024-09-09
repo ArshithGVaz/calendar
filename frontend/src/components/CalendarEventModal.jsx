@@ -105,17 +105,6 @@ const CalendarEventModal = ({ isVisible, onClose, selectedDate }) => {
             />
           </div>
           <div className="form-control">
-            <label>Priority:</label>
-            <input
-              type="range"
-              min="1"
-              max="5"
-              value={eventDetails.priority}
-              onChange={handleSliderChange}
-            />
-            <span>{eventDetails.priority}</span>
-          </div>
-          <div className="form-control">
             <textarea
               placeholder="To-Do List"
               name="todoList"
