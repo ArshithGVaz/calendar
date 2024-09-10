@@ -1,18 +1,17 @@
 import React from 'react';
 
-const Navbar = ({ toggleSidebar, subUsername, superUsername }) => {
+const Navbar = ({ toggleSidebar, subUsername, superUsername, userid }) => {
   // Retrieve the user info from localStorage
   const user = JSON.parse(localStorage.getItem('user'));
-
+  console.log("Speaking from Navba,",userid)
   return (
     <header className="bg-white shadow-md p-4 flex justify-between items-center z-50">
       <h1 className="text-lg font-bold">My Calendar App</h1>
       <nav>
         <ul className="flex space-x-4">
-          {/* Display super-username and sub-username */}
-          {subUsername && <li className="font-bold">{subUsername}</li>}
-          {superUsername && <li className="font-bold">({superUsername})</li>}
-          
+          {/* Display sub-username, super-username, and userid */}
+          {subUsername && <li className="font-bold">Sub: {subUsername}</li>}
+          {superUsername && <li className="font-bold">Super: {superUsername}</li>}
         </ul>
       </nav>
       <div className="flex items-center">

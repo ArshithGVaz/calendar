@@ -15,10 +15,11 @@ const ParentComponent = () => {
 
   const location = useLocation();
 
-  // Extract subUsername and superUsername from the query parameters
+  // Extract subUsername, superUsername, and userid from the query parameters
   const queryParams = new URLSearchParams(location.search);
   const subUsername = queryParams.get('subUsername');
   const superUsername = queryParams.get('superUsername');
+  const userid = queryParams.get('userid');
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -42,28 +43,38 @@ const ParentComponent = () => {
     setSelectedDate(date || new Date()); // Set the selected date when opening the modal
     setIsCreateModalVisible(true);
   };
-  console.log(subUsername, superUsername, "Hi");
+  console.log(userid);
 
   return (
     <div className="relative flex flex-col min-h-screen">
-      {/* Pass subUsername and superUsername to Navbar */}
-      <Navbar toggleSidebar={toggleSidebar} subUsername={subUsername} superUsername={superUsername} />
+      {/* Pass subUsername, superUsername, and userid to Navbar */}
+      <Navbar toggleSidebar={toggleSidebar} subUsername={subUsername} superUsername={superUsername} userid={userid} />
       <div className={`flex-grow flex transition-all duration-300 ${isSidebarOpen ? 'mr-[250px]' : ''}`}>
         <Calendar1 onDateClick={openCreateModal} />
-        {/* Pass selectedDate to RightSideBar */}
-        <RightSideBar isOpen={isSidebarOpen} onUpdate={handleUpdate} selectedDate={selectedDate} />
+        {/* Pass selectedDate, subUsername, superUsername, and userid to RightSideBar */}
+        <RightSideBar 
+          isOpen={isSidebarOpen} 
+          onUpdate={handleUpdate} 
+          selectedDate={selectedDate} 
+          subUsername={subUsername} 
+          superUsername={superUsername} 
+          userid={userid} 
+        />
       </div>
       <UpdateEventModal
         isVisible={isUpdateModalVisible}
         onClose={handleCloseUpdateModal}
         eventDetails={selectedEvent}
+        subUsername={subUsername}  // Pass subUsername
+        superUsername={superUsername}  // Pass superUsername
+        userid={userid}  // Pass userid
       />
       <CalendarEventModal
-  isVisible={isCreateModalVisible}
-  onClose={handleCloseCreateModal}
-  selectedDate={selectedDate}
-  subUsername={subUsername}  // Pass subUsername here
-/>
+        isVisible={isCreateModalVisible}
+        onClose={handleCloseCreateModal}
+        selectedDate={selectedDate}
+        userid='20' // Pass userid
+      />
     </div>
   );
 };

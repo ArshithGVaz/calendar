@@ -1,52 +1,61 @@
 import React, { useState, useEffect } from 'react';
 import './CEM.css';
 
-const CalendarEventModal = ({ isVisible, onClose, selectedDate, subUsername }) => {
+const CalendarEventModal = ({ isVisible, onClose, selectedDate, userid }) => {
   const [eventDetails, setEventDetails] = useState({
-    subUsername: '',  // New field to store subUsername
+    userid: '',  
     title: '',
     date: '',
     url: '',
     notes: '',
+    status: 'Pending',
   });
+
+  // Define the formatDate function
+  const formatDate = (date) => {
+    const d = new Date(date);
+    let day = d.getDate();
+    let month = d.getMonth() + 1;
+    let year = d.getFullYear();
+
+    // Add leading zero to day and month if necessary
+    if (day < 10) {
+      day = `0${day}`;
+    }
+    if (month < 10) {
+      month = `0${month}`;
+    }
+
+    return `${day}/${month}/${year}`;
+  };
 
   useEffect(() => {
     if (selectedDate) {
       const formattedDate = formatDate(selectedDate);
-      setEventDetails(prev => ({ ...prev, date: formattedDate, subUsername: subUsername }));  // Set subUsername here
+      setEventDetails(prev => ({
+        ...prev,
+        date: formattedDate,
+        userid: userid
+      }));
     }
-  }, [selectedDate, subUsername]);  // Add subUsername as a dependency
-
-  const formatDate = (date) => {
-    const d = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
-    return d.toISOString().split('T')[0].split('-').reverse().join('/');
-  };
-
+  }, [selectedDate, userid]);
+  console.log("Checking userid",userid,selectedDate);
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setEventDetails(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-  };
-
-  const handleSliderChange = (e) => {
-    setEventDetails(prev => ({ ...prev, priority: e.target.value }));
+    const { name, value } = e.target;
+    setEventDetails(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Saving Event Details:', eventDetails);
 
     const formData = new FormData();
-    formData.append('subUsername', eventDetails.subUsername);  // Add subUsername to form data
+    formData.append('userid', eventDetails.userid);
     formData.append('title', eventDetails.title);
     formData.append('date', eventDetails.date);
-    formData.append('priority', eventDetails.priority);
     formData.append('url', eventDetails.url);
     formData.append('notes', eventDetails.notes);
-  
-
+    formData.append('status', eventDetails.status);
+    console.log(formData);
     try {
       const response = await fetch('http://localhost:8000/events', {
         method: 'POST',
@@ -54,7 +63,6 @@ const CalendarEventModal = ({ isVisible, onClose, selectedDate, subUsername }) =
       });
 
       if (response.ok) {
-        console.log('Event created successfully!');
         onClose();
       } else {
         console.error('Failed to create event');
@@ -62,11 +70,6 @@ const CalendarEventModal = ({ isVisible, onClose, selectedDate, subUsername }) =
     } catch (error) {
       console.error('Error creating event:', error);
     }
-  };
-
-  const handleCancel = () => {
-    setEventDetails(prev => ({ ...prev, title: '' }));
-    onClose();
   };
 
   if (!isVisible) return null;
@@ -78,7 +81,7 @@ const CalendarEventModal = ({ isVisible, onClose, selectedDate, subUsername }) =
           <div className="form-control">
             <input
               type="text"
-              placeholder="Task"
+              placeholder="Task Title"
               name="title"
               value={eventDetails.title}
               onChange={handleChange}
@@ -91,14 +94,13 @@ const CalendarEventModal = ({ isVisible, onClose, selectedDate, subUsername }) =
               type="text"
               name="date"
               value={eventDetails.date}
-              onChange={handleChange}
-              required
+              readOnly
             />
           </div>
           <div className="form-control">
             <input
               type="text"
-              placeholder="Meeting URL (if no meeting leave it blank)"
+              placeholder="Meeting URL (optional)"
               name="url"
               value={eventDetails.url}
               onChange={handleChange}
@@ -113,18 +115,10 @@ const CalendarEventModal = ({ isVisible, onClose, selectedDate, subUsername }) =
             ></textarea>
           </div>
           <div className="form-actions">
-            <button
-              type="button"
-              onClick={handleCancel}
-              className="cancel-button"
-            >
+            <button type="button" onClick={onClose} className="cancel-button">
               Cancel
             </button>
-            <button
-              type="submit"
-              disabled={!eventDetails.title.trim()}
-              className="save-button"
-            >
+            <button type="submit" className="save-button">
               Save
             </button>
           </div>

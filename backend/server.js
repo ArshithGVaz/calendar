@@ -61,15 +61,26 @@ app.get('/api/users', (req, res) => {
 app.post('/api/users', (req, res) => {
     const { userid, username, email, super_user_id, password } = req.body;
 
-    // Insert user into the database
-    const query = 'INSERT INTO users (userid, username, email, super_user_id, password) VALUES (?, ?, ?, ?, ?)';
-    db.query(query, [userid, username, email, super_user_id, password], (err, result) => {
+    // Check if user already exists
+    const checkUserQuery = 'SELECT * FROM users WHERE userid = ?';
+    db.query(checkUserQuery, [userid], (err, result) => {
         if (err) {
-            console.error('Error adding user:', err.message);
-            return res.status(500).json({ message: 'Error adding user', error: err.message });
+            return res.status(500).json({ message: 'Error checking for user', error: err.message });
+        }
+        if (result.length > 0) {
+            return res.status(409).json({ message: 'User with this ID already exists' });
         }
 
-        res.status(201).json({ message: 'User added successfully!', userId: result.insertId });
+        // Insert user into the database
+        const query = 'INSERT INTO users (userid, username, email, super_user_id, password) VALUES (?, ?, ?, ?, ?)';
+        db.query(query, [userid, username, email, super_user_id, password], (err, result) => {
+            if (err) {
+                console.error('Error adding user:', err.message);
+                return res.status(500).json({ message: 'Error adding user', error: err.message });
+            }
+
+            res.status(201).json({ message: 'User added successfully!', userId: result.insertId });
+        });
     });
 });
 
@@ -200,23 +211,27 @@ app.get('/api/supervised/:userid', (req, res) => {
 
 // Add Event (POST)
 app.post('/events', (req, res) => {
-    let { subUsername, title, date, url, notes, todoList, status } = req.body;
-
-    date = convertStringToDate(date); // Assuming you're still converting dates to YYYY-MM-DD format
-
-    const query = 'INSERT INTO events (subUsername, title, date, url, notes, todoList, status) VALUES (?, ?, ?, ?, ?, ?, ?)';
-    db.query(query, [subUsername, title, date, url, notes, todoList, status], (err) => {
-        if (err) {
-            return res.status(500).json({ message: 'Error creating event', error: err.message });
-        }
-        res.status(201).json({ message: 'Event created successfully!' });
-    });
+    let { userid, title, date, url, notes, status } = req.body;
+    console.log(req.body);
+    // Convert date to YYYY-MM-DD
+    
+    // userid=1000, title = "sometile", date="10/09/2024", url="", notes="", status="Pending";
+    // date = convertStringToDate(date);
+    // const query = 'INSERT INTO events (userid, title, date, url, notes, status) VALUES (?, ?, ?, ?, ?, ?)';
+    // db.query(query, [userid, title, date, url, notes,  status], (err) => {
+    //     if (err) {
+    //         return res.status(500).json({ message: 'Error creating event', error: err.message });
+    //     }
+    //     res.status(201).json({ message: 'Event created successfully!' });
+    // });
 });
+
 
 // Update Event (PUT)
 app.put('/events/:event_id', (req, res) => {
     let { subUsername, title, date, url, notes, todoList, status } = req.body;
 
+    // Convert date to YYYY-MM-DD
     date = convertStringToDate(date);
 
     const query = 'UPDATE events SET subUsername = ?, title = ?, date = ?, url = ?, notes = ?, todoList = ?, status = ? WHERE id = ?';
@@ -227,6 +242,7 @@ app.put('/events/:event_id', (req, res) => {
         res.status(200).json({ message: 'Event updated successfully!' });
     });
 });
+
 
 // Mark Event as Completed (PATCH)
 app.patch('/events/:event_id/complete', (req, res) => {
@@ -244,6 +260,7 @@ app.patch('/events/:event_id/complete', (req, res) => {
     });
 });
 
+
 // Delete Event (DELETE)
 app.delete('/events/:event_id', (req, res) => {
     const { event_id } = req.params;
@@ -260,14 +277,15 @@ app.delete('/events/:event_id', (req, res) => {
     });
 });
 
+
 // Sidebar Data (GET)
 app.get('/sidebar/:subUserId', (req, res) => {
     const { subUserId } = req.params;
-    const { date } = req.query; // Assuming the date is passed as a query parameter
+    const { date } = req.query; // Date passed as a query parameter
 
-    const tasksQuery = "SELECT * FROM events WHERE user_id = ? AND date = ? AND url IS NULL";
-    const meetingsQuery = "SELECT * FROM events WHERE user_id = ? AND date = ? AND url IS NOT NULL";
-    const followUpQuery = "SELECT * FROM events WHERE user_id = ? AND date = ? AND status = 'Pending'";
+    const tasksQuery = "SELECT * FROM events WHERE subUsername = ? AND date = ? AND url IS NULL";
+    const meetingsQuery = "SELECT * FROM events WHERE subUsername = ? AND date = ? AND url IS NOT NULL";
+    const followUpQuery = "SELECT * FROM events WHERE subUsername = ? AND date = ? AND status = 'Pending'";
 
     db.query(tasksQuery, [subUserId, date], (err, tasks) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -291,6 +309,7 @@ app.get('/sidebar/:subUserId', (req, res) => {
         });
     });
 });
+
 
 // Server setup
 const PORT = 8000;
