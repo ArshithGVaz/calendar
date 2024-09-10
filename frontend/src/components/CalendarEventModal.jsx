@@ -30,7 +30,7 @@ const CalendarEventModal = ({ isVisible, onClose, selectedDate, userid }) => {
   };
 
   useEffect(() => {
-    if (selectedDate) {
+    if (selectedDate && userid) {
       const formattedDate = formatDate(selectedDate);
       setEventDetails(prev => ({
         ...prev,
@@ -39,7 +39,9 @@ const CalendarEventModal = ({ isVisible, onClose, selectedDate, userid }) => {
       }));
     }
   }, [selectedDate, userid]);
-  console.log("Checking userid",userid,selectedDate);
+
+  console.log("Checking userid", userid, selectedDate);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setEventDetails(prev => ({ ...prev, [name]: value }));
@@ -48,29 +50,43 @@ const CalendarEventModal = ({ isVisible, onClose, selectedDate, userid }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const formData = new FormData();
-    formData.append('userid', eventDetails.userid);
-    formData.append('title', eventDetails.title);
-    formData.append('date', eventDetails.date);
-    formData.append('url', eventDetails.url);
-    formData.append('notes', eventDetails.notes);
-    formData.append('status', eventDetails.status);
-    console.log(formData);
-    try {
-      const response = await fetch('http://localhost:8000/events', {
-        method: 'POST',
-        body: formData
-      });
+    const jsonObject = {
+        userid: eventDetails.userid,
+        title: eventDetails.title,
+        date: eventDetails.date,
+        url: eventDetails.url,
+        notes: eventDetails.notes,
+        status: eventDetails.status,
+    };
 
-      if (response.ok) {
-        onClose();
-      } else {
-        console.error('Failed to create event');
-      }
+    try {
+        const response = await fetch('http://localhost:8000/events', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',  // Ensure Content-Type is set to JSON
+            },
+            body: JSON.stringify(jsonObject),  // Send JSON data
+        });
+
+        if (response.ok) {
+            // Reset form values after successful save
+            setEventDetails({
+                userid: '',
+                title: '',
+                date: formatDate(selectedDate),
+                url: '',
+                notes: '',
+                status: 'Pending',
+            });
+            onClose();  // Close the modal after successful save
+        } else {
+            console.error('Failed to create event');
+        }
     } catch (error) {
-      console.error('Error creating event:', error);
+        console.error('Error creating event:', error);  // Handle network errors
     }
-  };
+};
+
 
   if (!isVisible) return null;
 

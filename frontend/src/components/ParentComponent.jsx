@@ -11,7 +11,8 @@ const ParentComponent = () => {
   const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(new Date()); // selectedDate defined here
+  const [selectedDate, setSelectedDate] = useState(null);  // Initially no date selected
+  const [currentUserid, setCurrentUserid] = useState(null);  // Set userid when page loads
 
   const location = useLocation();
 
@@ -20,6 +21,11 @@ const ParentComponent = () => {
   const subUsername = queryParams.get('subUsername');
   const superUsername = queryParams.get('superUsername');
   const userid = queryParams.get('userid');
+
+  // Store userid at the beginning
+  if (currentUserid === null) {
+    setCurrentUserid(userid); // Set it only once when the page loads
+  }
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -39,41 +45,42 @@ const ParentComponent = () => {
     setIsCreateModalVisible(false);
   };
 
+  // When a date is clicked in Calendar1, set both date and userid
   const openCreateModal = (date) => {
-    setSelectedDate(date || new Date()); // Set the selected date when opening the modal
-    setIsCreateModalVisible(true);
+    setSelectedDate(date || new Date());  // Set the selected date
+    setIsCreateModalVisible(true);        // Show the modal
   };
-  console.log(userid);
 
   return (
     <div className="relative flex flex-col min-h-screen">
-      {/* Pass subUsername, superUsername, and userid to Navbar */}
-      <Navbar toggleSidebar={toggleSidebar} subUsername={subUsername} superUsername={superUsername} userid={userid} />
+      {/* Pass subUsername, superUsername, and currentUserid to Navbar */}
+      <Navbar toggleSidebar={toggleSidebar} subUsername={subUsername} superUsername={superUsername} userid={currentUserid} />
       <div className={`flex-grow flex transition-all duration-300 ${isSidebarOpen ? 'mr-[250px]' : ''}`}>
-        <Calendar1 onDateClick={openCreateModal} />
-        {/* Pass selectedDate, subUsername, superUsername, and userid to RightSideBar */}
+        {/* Pass userid to Calendar1 */}
+        <Calendar1 onDateClick={openCreateModal} userid={currentUserid} /> 
+        {/* Pass selectedDate, subUsername, superUsername, and currentUserid to RightSideBar */}
         <RightSideBar 
           isOpen={isSidebarOpen} 
           onUpdate={handleUpdate} 
           selectedDate={selectedDate} 
           subUsername={subUsername} 
           superUsername={superUsername} 
-          userid={userid} 
+          userid={currentUserid} 
         />
       </div>
       <UpdateEventModal
         isVisible={isUpdateModalVisible}
         onClose={handleCloseUpdateModal}
         eventDetails={selectedEvent}
-        subUsername={subUsername}  // Pass subUsername
-        superUsername={superUsername}  // Pass superUsername
-        userid={userid}  // Pass userid
+        subUsername={subUsername}
+        superUsername={superUsername}
+        userid={currentUserid}  // Pass userid to UpdateEventModal, even though it's not initially needed
       />
       <CalendarEventModal
         isVisible={isCreateModalVisible}
         onClose={handleCloseCreateModal}
         selectedDate={selectedDate}
-        userid='20' // Pass userid
+        userid={currentUserid}  // Pass both date and userid to CalendarEventModal
       />
     </div>
   );
