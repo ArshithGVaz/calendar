@@ -3,7 +3,7 @@ import React from 'react';
 const Navbar = ({ toggleSidebar, subUsername, superUsername, userid }) => {
   // Retrieve the user info from localStorage
   const user = JSON.parse(localStorage.getItem('user'));
-  console.log("Speaking from Navba,",userid)
+  
   return (
     <header className="bg-white shadow-md p-4 flex justify-between items-center z-50">
       <h1 className="text-lg font-bold">My Calendar App</h1>

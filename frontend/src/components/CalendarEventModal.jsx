@@ -40,7 +40,6 @@ const CalendarEventModal = ({ isVisible, onClose, selectedDate, userid }) => {
     }
   }, [selectedDate, userid]);
 
-  console.log("Checking userid", userid, selectedDate);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

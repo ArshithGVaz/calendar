@@ -7,8 +7,10 @@ const app = express();
 
 app.use(cors({
     origin: '*',  // Allow all origins, for testing purposes
-    methods: 'GET,POST,PUT,PATCH,DELETE'
+    methods: 'GET, POST, PUT, PATCH, DELETE',
+    allowedHeaders: 'Content-Type, Authorization',
 }));
+
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -215,15 +217,15 @@ app.post('/events', (req, res) => {
     console.log(req.body);
     // Convert date to YYYY-MM-DD
     
-    // userid=1000, title = "sometile", date="10/09/2024", url="", notes="", status="Pending";
-    // date = convertStringToDate(date);
-    // const query = 'INSERT INTO events (userid, title, date, url, notes, status) VALUES (?, ?, ?, ?, ?, ?)';
-    // db.query(query, [userid, title, date, url, notes,  status], (err) => {
-    //     if (err) {
-    //         return res.status(500).json({ message: 'Error creating event', error: err.message });
-    //     }
-    //     res.status(201).json({ message: 'Event created successfully!' });
-    // });
+    date = convertStringToDate(date);
+    console.log("Date is here",date);
+    const query = 'INSERT INTO events (userid, title, date, url, notes, status) VALUES (?, ?, ?, ?, ?, ?)';
+    db.query(query, [userid, title, date, url, notes,  status], (err) => {
+        if (err) {
+            return res.status(500).json({ message: 'Error creating event', error: err.message });
+        }
+        res.status(201).json({ message: 'Event created successfully!' });
+    });
 });
 
 
@@ -279,21 +281,21 @@ app.delete('/events/:event_id', (req, res) => {
 
 
 // Sidebar Data (GET)
-app.get('/sidebar/:subUserId', (req, res) => {
-    const { subUserId } = req.params;
+app.get('/sidebar/:userid', (req, res) => {
+    const { userid } = req.params;
     const { date } = req.query; // Date passed as a query parameter
 
-    const tasksQuery = "SELECT * FROM events WHERE subUsername = ? AND date = ? AND url IS NULL";
-    const meetingsQuery = "SELECT * FROM events WHERE subUsername = ? AND date = ? AND url IS NOT NULL";
-    const followUpQuery = "SELECT * FROM events WHERE subUsername = ? AND date = ? AND status = 'Pending'";
-
-    db.query(tasksQuery, [subUserId, date], (err, tasks) => {
+    const tasksQuery = "SELECT * FROM events WHERE userid = ? AND date = ? AND url IS NULL";
+    const meetingsQuery = "SELECT * FROM events WHERE userid = ? AND date = ? AND url IS NOT NULL";
+    const followUpQuery = "SELECT * FROM events WHERE userid = ? AND date = ? AND status = 'Pending'";
+    console.log(userid,date);
+    db.query(tasksQuery, [userid, date], (err, tasks) => {
         if (err) return res.status(500).json({ error: err.message });
 
-        db.query(meetingsQuery, [subUserId, date], (err, meetings) => {
+        db.query(meetingsQuery, [userid, date], (err, meetings) => {
             if (err) return res.status(500).json({ error: err.message });
 
-            db.query(followUpQuery, [subUserId, date], (err, following_up) => {
+            db.query(followUpQuery, [userid, date], (err, following_up) => {
                 if (err) return res.status(500).json({ error: err.message });
 
                 const result = {

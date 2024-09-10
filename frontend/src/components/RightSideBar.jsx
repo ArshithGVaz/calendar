@@ -20,6 +20,7 @@ const RightSideBar = ({ isOpen, onUpdate, selectedDate, subUsername, superUserna
       try {
         const response = await fetch(`http://localhost:8000/sidebar/${userid}?date=${selectedDate}`);
         const data = await response.json();
+        console.log("I am here",selectedDate);
         // Make sure data is in the correct format
         setEventsData(data || {
           Today: {
@@ -40,7 +41,7 @@ const RightSideBar = ({ isOpen, onUpdate, selectedDate, subUsername, superUserna
         });
       }
     };
-
+    console.log("Speaking from rightSideBar",eventsData)
     if (subUsername && selectedDate) {
       fetchEvents();
     }
