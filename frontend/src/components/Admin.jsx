@@ -14,6 +14,12 @@ const Admin = () => {
         >
           Add Participant
         </button>
+        <button
+          className="bg-green-500 text-white px-4 py-2 rounded"
+          onClick={() => navigate(`/welcome/admin?userid=1000`)}
+        >
+          CalenDar
+        </button>
         {/* Add more buttons for other functionalities */}
       </div>
     </div>

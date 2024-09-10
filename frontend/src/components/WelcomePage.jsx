@@ -1,26 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
-
-// Function to generate random color
-const generateRandomColor = () => {
-  const letters = '0123456789ABCDEF';
-  let color = '#';
-  for (let i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
-};
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import screenshot from '../assets/lightblue.jpg';
 
 const WelcomePage = () => {
-  const { username } = useParams();  // Get username from URL params
+  const { username } = useParams();  // Get superUsername (the logged-in user) from URL params
   const location = useLocation();  // Access location object to retrieve query parameters
+  const navigate = useNavigate();
 
   // Extract userid from query parameters
   const queryParams = new URLSearchParams(location.search);
   const userid = queryParams.get('userid');  // Get userid from query parameters
 
   const [users, setUsers] = useState([]);
-
+  
   useEffect(() => {
     const fetchSupervisedUsers = async () => {
       try {
@@ -37,7 +29,7 @@ const WelcomePage = () => {
         console.error('Error fetching supervised users:', error);
       }
     };
-
+    console.log(username);  // Logged-in (super-user) username for debugging
     fetchSupervisedUsers();
   }, [userid]);
 
@@ -49,35 +41,29 @@ const WelcomePage = () => {
       {console.log('Total Users (including main user):', users.length + 1)}
 
       {/* Grid of rectangles for users */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-6 w-full max-w-5xl overflow-y-auto" style={{ position: 'relative' }}>
-        {/* The logged-in user's rectangle */}
-        <div 
-          key={userid}  // Use userid as the key
-          className="flex items-center justify-center text-white font-bold rounded-md shadow-lg relative"
-          style={{
-            backgroundColor: generateRandomColor(),
-            width: '100%',  // Takes full width of the grid column
-            paddingBottom: '56.25%',  // Ensures 16:9 aspect ratio
-            position: 'relative'
-          }}
-        >
-          <span className="absolute">User: {username}</span>
-        </div>
-
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-6 w-full max-w-5xl overflow-y-auto">
+        
         {/* Sub-users' rectangles */}
         {users.map((user) => (
-          <div 
-            key={user.userid} 
-            className="flex items-center justify-center text-white font-bold rounded-md shadow-lg relative"
-            style={{
-              backgroundColor: generateRandomColor(),
-              width: '100%',  // Ensures it takes up the full width available
-              paddingBottom: '56.25%',  // 16:9 aspect ratio
-              position: 'relative'
-            }}
+          <button 
+            onClick={() => navigate(`/calendar/${user.username}?userid=${user.userid}&superUsername=${username}&subUsername=${user.username}`)} 
+            key={user.userid}
           >
-            <span className="absolute">Sub-User: {user.userid}</span>
-          </div>
+            <div 
+              className="flex items-center justify-center text-black font-bold rounded-md shadow-lg relative h-20"
+              style={{
+                backgroundColor: 'blue', 
+                width: '100%', 
+                height: '20%',
+                position: 'relative'
+              }}
+            >
+              <img src={screenshot} alt="Calendar Screenshot" className="w-full h-40 rounded-md" />
+              <span className="absolute">
+                Sub-User: {user.username} (ID: {user.userid})
+              </span>
+            </div>
+          </button>
         ))}
       </div>
     </div>

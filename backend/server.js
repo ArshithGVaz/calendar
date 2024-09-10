@@ -92,16 +92,26 @@ app.post('/api/login', (req, res) => {
         }
 
         const user = result[0];
-        // console.log('User details fetched:', user);
 
         // Check if the user is admin (userid = 1000)
         if (user.userid === 1000) {
-            return res.status(200).json({ success: true, isAdmin: true, username: user.username });
+            return res.status(200).json({ 
+                success: true, 
+                isAdmin: true, 
+                username: user.username, 
+                userid: user.userid  // Return userid along with username
+            });
         } else {
-            return res.status(200).json({ success: true, isAdmin: false, username: user.username });
+            return res.status(200).json({ 
+                success: true, 
+                isAdmin: false, 
+                username: user.username, 
+                userid: user.userid  // Return userid along with username
+            });
         }
     });
 });
+
 
 // Update a user
 app.put('/api/users/:userid', (req, res) => {
@@ -162,15 +172,15 @@ app.get('/api/supervised/:userid', (req, res) => {
 
     const query = `
         WITH RECURSIVE supervised_users AS (
-            SELECT userid, super_user_id
+            SELECT userid, username, super_user_id
             FROM users
             WHERE userid = ?
             UNION
-            SELECT u.userid, u.super_user_id
+            SELECT u.userid, u.username, u.super_user_id
             FROM users u
             INNER JOIN supervised_users su ON su.userid = u.super_user_id
         )
-        SELECT * FROM supervised_users
+        SELECT userid, username FROM supervised_users
     `;
 
     db.query(query, [userid], (err, result) => {
@@ -180,7 +190,7 @@ app.get('/api/supervised/:userid', (req, res) => {
         }
 
         // Log the fetched result for debugging
-        console.log('Supervised Users:', result.userid);
+        console.log('Supervised Users:', result);
         
         res.status(200).json({ success: true, users: result });
     });
@@ -190,12 +200,12 @@ app.get('/api/supervised/:userid', (req, res) => {
 
 // Add Event (POST)
 app.post('/events', (req, res) => {
-    let { title, date, priority, url, notes, todoList } = req.body;
-    
-    date = convertStringToDate(date);
+    let { subUsername, title, date, url, notes, todoList, status } = req.body;
 
-    const query = 'INSERT INTO events (title, date, priority, url, notes, todoList, status) VALUES (?, ?, ?, ?, ?, ?, ?)';
-    db.query(query, [title, date, priority, url, notes, todoList, null], (err) => {
+    date = convertStringToDate(date); // Assuming you're still converting dates to YYYY-MM-DD format
+
+    const query = 'INSERT INTO events (subUsername, title, date, url, notes, todoList, status) VALUES (?, ?, ?, ?, ?, ?, ?)';
+    db.query(query, [subUsername, title, date, url, notes, todoList, status], (err) => {
         if (err) {
             return res.status(500).json({ message: 'Error creating event', error: err.message });
         }
@@ -205,13 +215,12 @@ app.post('/events', (req, res) => {
 
 // Update Event (PUT)
 app.put('/events/:event_id', (req, res) => {
-    let { event_id } = req.params;
-    let { title, date, priority, url, notes, todoList } = req.body;
-    
+    let { subUsername, title, date, url, notes, todoList, status } = req.body;
+
     date = convertStringToDate(date);
 
-    const query = 'UPDATE events SET title = ?, date = ?, priority = ?, url = ?, notes = ?, todoList = ? WHERE id = ?';
-    db.query(query, [title, date, priority, url, notes, todoList, event_id], (err) => {
+    const query = 'UPDATE events SET subUsername = ?, title = ?, date = ?, url = ?, notes = ?, todoList = ?, status = ? WHERE id = ?';
+    db.query(query, [subUsername, title, date, url, notes, todoList, status, req.params.event_id], (err) => {
         if (err) {
             return res.status(500).json({ message: 'Error updating event', error: err.message });
         }
@@ -252,36 +261,28 @@ app.delete('/events/:event_id', (req, res) => {
 });
 
 // Sidebar Data (GET)
-app.get('/sidebar', (req, res) => {
-    const today = new Date().toLocaleDateString('en-GB').split('/').reverse().join('-');
+app.get('/sidebar/:subUserId', (req, res) => {
+    const { subUserId } = req.params;
+    const { date } = req.query; // Assuming the date is passed as a query parameter
 
-    const tasksQuery = "SELECT * FROM events WHERE date = ? AND url IS NULL";
-    const meetingsQuery = "SELECT * FROM events WHERE date = ? AND url IS NOT NULL";
-    const followUpQuery = "SELECT * FROM events WHERE status = 'Pending'";
+    const tasksQuery = "SELECT * FROM events WHERE user_id = ? AND date = ? AND url IS NULL";
+    const meetingsQuery = "SELECT * FROM events WHERE user_id = ? AND date = ? AND url IS NOT NULL";
+    const followUpQuery = "SELECT * FROM events WHERE user_id = ? AND date = ? AND status = 'Pending'";
 
-    db.query(tasksQuery, [today], (err, tasks) => {
+    db.query(tasksQuery, [subUserId, date], (err, tasks) => {
         if (err) return res.status(500).json({ error: err.message });
 
-        db.query(meetingsQuery, [today], (err, meetings) => {
+        db.query(meetingsQuery, [subUserId, date], (err, meetings) => {
             if (err) return res.status(500).json({ error: err.message });
 
-            db.query(followUpQuery, (err, following_up) => {
+            db.query(followUpQuery, [subUserId, date], (err, following_up) => {
                 if (err) return res.status(500).json({ error: err.message });
 
                 const result = {
                     Today: {
-                        tasks: tasks.map(task => ({
-                            ...task,
-                            date: convertDateToString(new Date(task.date))
-                        })),
-                        meetings: meetings.map(meeting => ({
-                            ...meeting,
-                            date: convertDateToString(new Date(meeting.date))
-                        })),
-                        following_up: following_up.map(follow_up => ({
-                            ...follow_up,
-                            date: convertDateToString(new Date(follow_up.date))
-                        }))
+                        tasks,
+                        meetings,
+                        following_up
                     }
                 };
 

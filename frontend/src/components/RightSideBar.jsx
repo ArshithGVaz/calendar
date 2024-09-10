@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import FollowUpModal from './FollowUpModal';
 import './RightSideBar.css';
 import tickIcon from '../assets/tick.png';
+import { useParams } from 'react-router-dom';
 
-const RightSideBar = ({ isOpen, onUpdate }) => {
+const RightSideBar = ({ isOpen, onUpdate, selectedDate }) => {
+  const { subUserId } = useParams(); // Extract subUserId from the URL params
   const [eventsData, setEventsData] = useState({
     Today: {
       tasks: [],
@@ -18,7 +20,7 @@ const RightSideBar = ({ isOpen, onUpdate }) => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch('http://localhost:8080/sidebar');
+        const response = await fetch(`http://localhost:8000/sidebar/${subUserId}?date=${selectedDate}`);
         const data = await response.json();
         setEventsData(data);
       } catch (error) {
@@ -26,8 +28,10 @@ const RightSideBar = ({ isOpen, onUpdate }) => {
       }
     };
 
-    fetchEvents();
-  }, []);
+    if (subUserId && selectedDate) {
+      fetchEvents();
+    }
+  }, [subUserId, selectedDate]);
 
   const toggleButtons = (id) => {
     setActiveButtons((prev) => ({
@@ -43,7 +47,6 @@ const RightSideBar = ({ isOpen, onUpdate }) => {
 
   const handleFollowUpSubmit = () => {
     setIsFollowUpModalVisible(false);
-    
   };
 
   const handleCompleted = async (event) => {
@@ -58,7 +61,6 @@ const RightSideBar = ({ isOpen, onUpdate }) => {
 
       if (response.ok) {
         console.log(`Event with ID: ${event.id} marked as completed`);
-        // Optionally refresh the data to reflect changes
       } else {
         console.error('Failed to mark event as completed');
       }
@@ -75,7 +77,6 @@ const RightSideBar = ({ isOpen, onUpdate }) => {
 
       if (response.ok) {
         console.log(`Event with ID: ${id} deleted`);
-        // Optionally refresh the data to remove the deleted event
       } else {
         console.error('Failed to delete event');
       }

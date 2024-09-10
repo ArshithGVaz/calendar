@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Navbar = ({ toggleSidebar }) => {
+const Navbar = ({ toggleSidebar, subUsername, superUsername }) => {
   // Retrieve the user info from localStorage
   const user = JSON.parse(localStorage.getItem('user'));
 
@@ -9,9 +9,10 @@ const Navbar = ({ toggleSidebar }) => {
       <h1 className="text-lg font-bold">My Calendar App</h1>
       <nav>
         <ul className="flex space-x-4">
-          {/* <li><a href="#" className="hover:underline">Home</a></li>
-          <li><a href="#" className="hover:underline">About</a></li>
-          <li><a href="#" className="hover:underline">Contact</a></li> */}
+          {/* Display super-username and sub-username */}
+          {subUsername && <li className="font-bold">{subUsername}</li>}
+          {superUsername && <li className="font-bold">({superUsername})</li>}
+          
         </ul>
       </nav>
       <div className="flex items-center">

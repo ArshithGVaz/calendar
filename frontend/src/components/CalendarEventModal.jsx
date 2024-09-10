@@ -1,22 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import './CEM.css';
 
-const CalendarEventModal = ({ isVisible, onClose, selectedDate }) => {
+const CalendarEventModal = ({ isVisible, onClose, selectedDate, subUsername }) => {
   const [eventDetails, setEventDetails] = useState({
+    subUsername: '',  // New field to store subUsername
     title: '',
     date: '',
     url: '',
     notes: '',
-    todoList: [],
-    priority: 1  // Default priority to 1
   });
 
   useEffect(() => {
     if (selectedDate) {
       const formattedDate = formatDate(selectedDate);
-      setEventDetails(prev => ({ ...prev, date: formattedDate }));
+      setEventDetails(prev => ({ ...prev, date: formattedDate, subUsername: subUsername }));  // Set subUsername here
     }
-  }, [selectedDate]);
+  }, [selectedDate, subUsername]);  // Add subUsername as a dependency
 
   const formatDate = (date) => {
     const d = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
@@ -40,12 +39,13 @@ const CalendarEventModal = ({ isVisible, onClose, selectedDate }) => {
     console.log('Saving Event Details:', eventDetails);
 
     const formData = new FormData();
+    formData.append('subUsername', eventDetails.subUsername);  // Add subUsername to form data
     formData.append('title', eventDetails.title);
     formData.append('date', eventDetails.date);
     formData.append('priority', eventDetails.priority);
     formData.append('url', eventDetails.url);
     formData.append('notes', eventDetails.notes);
-    formData.append('todoList', JSON.stringify(eventDetails.todoList));
+  
 
     try {
       const response = await fetch('http://localhost:8000/events', {
@@ -78,7 +78,7 @@ const CalendarEventModal = ({ isVisible, onClose, selectedDate }) => {
           <div className="form-control">
             <input
               type="text"
-              placeholder="Title"
+              placeholder="Task"
               name="title"
               value={eventDetails.title}
               onChange={handleChange}
@@ -98,21 +98,15 @@ const CalendarEventModal = ({ isVisible, onClose, selectedDate }) => {
           <div className="form-control">
             <input
               type="text"
-              placeholder="URL"
+              placeholder="Meeting URL (if no meeting leave it blank)"
               name="url"
               value={eventDetails.url}
               onChange={handleChange}
             />
           </div>
-          <div className="form-control">
+          <div>
             <textarea
-              placeholder="To-Do List"
-              name="todoList"
-              value={eventDetails.todoList}
-              onChange={handleChange}
-            ></textarea>
-            <textarea
-              placeholder="Note"
+              placeholder="Notes"
               name="notes"
               value={eventDetails.notes}
               onChange={handleChange}
