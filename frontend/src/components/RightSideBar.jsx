@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import FollowUpModal from './FollowUpModal';
 import './RightSideBar.css';
-import tickIcon from '../assets/tick.png'; // Assuming you have a tick icon for completed tasks
+import tickIcon from '../assets/tick.png';
+import { useParams } from 'react-router-dom';
 
 const RightSideBar = ({ isOpen, onUpdate, selectedDate, subUsername, superUsername, userid }) => {
   const [eventsData, setEventsData] = useState({
@@ -19,16 +20,25 @@ const RightSideBar = ({ isOpen, onUpdate, selectedDate, subUsername, superUserna
     const fetchEvents = async () => {
       try {
         const response = await fetch(`http://localhost:8000/sidebar/${userid}?date=${selectedDate}`);
-        const data = await response.json();
-        console.log("I am here",selectedDate);
-        // Make sure data is in the correct format
-        setEventsData(data || {
-          Today: {
-            tasks: [],
-            meetings: [],
-            following_up: []
-          }
-        });
+        if (response.ok) {
+          const data = await response.json();
+          setEventsData(data || {
+            Today: {
+              tasks: [],
+              meetings: [],
+              following_up: []
+            }
+          });
+        } else {
+          console.error('Error fetching events, status:', response.status);
+          setEventsData({
+            Today: {
+              tasks: [],
+              meetings: [],
+              following_up: []
+            }
+          });
+        }
       } catch (error) {
         console.error('Error fetching events:', error);
         // Set default empty state in case of error
@@ -41,11 +51,11 @@ const RightSideBar = ({ isOpen, onUpdate, selectedDate, subUsername, superUserna
         });
       }
     };
-    console.log("Speaking from rightSideBar",eventsData)
-    if (subUsername && selectedDate) {
+
+    if (userid && selectedDate) {
       fetchEvents();
     }
-  }, [subUsername, selectedDate]);
+  }, [userid, selectedDate]);
 
   const toggleButtons = (id) => {
     setActiveButtons((prev) => ({
@@ -75,14 +85,6 @@ const RightSideBar = ({ isOpen, onUpdate, selectedDate, subUsername, superUserna
 
       if (response.ok) {
         console.log(`Event with ID: ${event.id} marked as completed`);
-        // Refresh the events after marking as completed
-        setEventsData(prev => ({
-          ...prev,
-          Today: {
-            ...prev.Today,
-            tasks: prev.Today.tasks.filter(task => task.id !== event.id), // Remove the completed task
-          }
-        }));
       } else {
         console.error('Failed to mark event as completed');
       }
@@ -99,15 +101,6 @@ const RightSideBar = ({ isOpen, onUpdate, selectedDate, subUsername, superUserna
 
       if (response.ok) {
         console.log(`Event with ID: ${id} deleted`);
-        // Refresh the events after deleting
-        setEventsData(prev => ({
-          ...prev,
-          Today: {
-            tasks: prev.Today.tasks.filter(task => task.id !== id),
-            meetings: prev.Today.meetings.filter(meeting => meeting.id !== id),
-            following_up: prev.Today.following_up.filter(work => work.id !== id)
-          }
-        }));
       } else {
         console.error('Failed to delete event');
       }
@@ -125,25 +118,25 @@ const RightSideBar = ({ isOpen, onUpdate, selectedDate, subUsername, superUserna
     </div>
   );
 
-  const renderEventTitle = (event) => (
-    <>
-      {event.status === 'Completed' && (
-        <img src={tickIcon} alt="Completed" className="tick-icon" />
-      )}
-      {event.title}
-    </>
-  );
+  const renderEventTitle = (event) => {
+    return (
+      <>
+        {event.status === 'Completed' && (
+          <img src={tickIcon} alt="Completed" className="tick-icon" />
+        )}
+        {event.title}
+      </>
+    );
+  };
 
-  // Safely access eventsData.Today, fallback to empty arrays if undefined
-  const tasks = eventsData?.Today?.tasks || [];
-  const meetings = eventsData?.Today?.meetings || [];
-  const following_up = eventsData?.Today?.following_up || [];
+  // Ensure eventsData and Today exist before accessing tasks, meetings, etc.
+  const { tasks = [], meetings = [], following_up = [] } = eventsData?.Today || {};
 
   return (
     <div className={`sidebar-container ${isOpen ? 'open' : ''}`}>
       <aside className="sidebar">
         <section>
-          <h3>Tasks</h3>
+          <h3>Tasks for {selectedDate}</h3> {/* Display the selectedDate */}
           {tasks.map((task) => (
             <div key={task.id} className="event-item">
               <button

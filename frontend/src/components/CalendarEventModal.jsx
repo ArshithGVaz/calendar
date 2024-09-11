@@ -40,7 +40,6 @@ const CalendarEventModal = ({ isVisible, onClose, selectedDate, userid }) => {
     }
   }, [selectedDate, userid]);
 
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setEventDetails(prev => ({ ...prev, [name]: value }));
@@ -57,14 +56,14 @@ const CalendarEventModal = ({ isVisible, onClose, selectedDate, userid }) => {
         notes: eventDetails.notes,
         status: eventDetails.status,
     };
-
+    
     try {
         const response = await fetch('http://localhost:8000/events', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',  // Ensure Content-Type is set to JSON
+                'Content-Type': 'application/json',
             },
-            body: JSON.stringify(jsonObject),  // Send JSON data
+            body: JSON.stringify(jsonObject),
         });
 
         if (response.ok) {
@@ -72,20 +71,21 @@ const CalendarEventModal = ({ isVisible, onClose, selectedDate, userid }) => {
             setEventDetails({
                 userid: '',
                 title: '',
-                date: formatDate(selectedDate),
+                date: formatDate(selectedDate), // Ensure selectedDate is still formatted
                 url: '',
                 notes: '',
                 status: 'Pending',
             });
-            onClose();  // Close the modal after successful save
+
+            // Call onClose after successful submission
+            onClose(); 
         } else {
             console.error('Failed to create event');
         }
     } catch (error) {
-        console.error('Error creating event:', error);  // Handle network errors
+        console.error('Error creating event:', error);
     }
 };
-
 
   if (!isVisible) return null;
 

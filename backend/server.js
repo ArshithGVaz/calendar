@@ -29,7 +29,14 @@ db.connect(err => {
 });
 
 // Function to convert DD/MM/YYYY to YYYY-MM-DD
-const convertStringToDate = (dateStr) => {
+const convertToDateString = (isoDateStr) => {
+    const date = new Date(isoDateStr);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // 0-based month
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`; // Return as YYYY-MM-DD
+  };
+  const convertStringToDate = (dateStr) => {
     if (typeof dateStr === 'string') {
         const [dd, mm, yyyy] = dateStr.split('/');
         return new Date(`${yyyy}-${mm}-${dd}`);
@@ -210,8 +217,6 @@ app.get('/api/supervised/:userid', (req, res) => {
 });
 
 
-
-// Add Event (POST)
 app.post('/events', (req, res) => {
     let { userid, title, date, url, notes, status } = req.body;
     console.log(req.body);
@@ -227,6 +232,7 @@ app.post('/events', (req, res) => {
         res.status(201).json({ message: 'Event created successfully!' });
     });
 });
+
 
 
 // Update Event (PUT)
@@ -279,16 +285,20 @@ app.delete('/events/:event_id', (req, res) => {
     });
 });
 
-
-// Sidebar Data (GET)
 app.get('/sidebar/:userid', (req, res) => {
     const { userid } = req.params;
-    const { date } = req.query; // Date passed as a query parameter
+    let { date } = req.query;
+
+    // Convert date from DD/MM/YYYY to YYYY-MM-DD
+    if (date) {
+        const [day, month, year] = date.split('/');
+        date = `${year}-${month}-${day}`;
+    }
 
     const tasksQuery = "SELECT * FROM events WHERE userid = ? AND date = ? AND url IS NULL";
     const meetingsQuery = "SELECT * FROM events WHERE userid = ? AND date = ? AND url IS NOT NULL";
     const followUpQuery = "SELECT * FROM events WHERE userid = ? AND date = ? AND status = 'Pending'";
-    console.log(userid,date);
+
     db.query(tasksQuery, [userid, date], (err, tasks) => {
         if (err) return res.status(500).json({ error: err.message });
 
