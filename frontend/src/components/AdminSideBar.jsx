@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import FollowUpModal from './FollowUpModal';
 import './RightSideBar.css';
 import tickIcon from '../assets/tick.png';
-import { useParams } from 'react-router-dom';
 
 const RightSideBar = ({ isOpen, onUpdate, selectedDate, subUsername, superUsername, userid }) => {
   const [eventsData, setEventsData] = useState({
@@ -85,6 +84,8 @@ const RightSideBar = ({ isOpen, onUpdate, selectedDate, subUsername, superUserna
 
       if (response.ok) {
         console.log(`Event with ID: ${event.id} marked as completed`);
+        // Update event status locally
+        updateEventStatus(event.id, 'Completed');
       } else {
         console.error('Failed to mark event as completed');
       }
@@ -101,6 +102,8 @@ const RightSideBar = ({ isOpen, onUpdate, selectedDate, subUsername, superUserna
 
       if (response.ok) {
         console.log(`Event with ID: ${id} deleted`);
+        // Remove the event from the state
+        removeEventFromState(id);
       } else {
         console.error('Failed to delete event');
       }
@@ -109,25 +112,97 @@ const RightSideBar = ({ isOpen, onUpdate, selectedDate, subUsername, superUserna
     }
   };
 
+  // New function to handle approval
+  const handleApprove = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:8000/events/${id}/approve`, {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        console.log(`Event with ID: ${id} approved`);
+        // Update event approval status locally
+        updateEventApproval(id, 'Approved');
+      } else {
+        console.error('Failed to approve event');
+      }
+    } catch (error) {
+      console.error('Error approving event:', error);
+    }
+  };
+
+  // Function to update event status locally
+  const updateEventStatus = (id, status) => {
+    setEventsData((prevData) => {
+      const updatedEvents = { ...prevData };
+      ['tasks', 'meetings', 'following_up'].forEach((category) => {
+        updatedEvents.Today[category] = updatedEvents.Today[category].map((event) => {
+          if (event.id === id) {
+            return { ...event, status };
+          }
+          return event;
+        });
+      });
+      return updatedEvents;
+    });
+  };
+
+  // Function to update event approval status locally
+  const updateEventApproval = (id, approved) => {
+    setEventsData((prevData) => {
+      const updatedEvents = { ...prevData };
+      ['tasks', 'meetings', 'following_up'].forEach((category) => {
+        updatedEvents.Today[category] = updatedEvents.Today[category].map((event) => {
+          if (event.id === id) {
+            return { ...event, approved };
+          }
+          return event;
+        });
+      });
+      return updatedEvents;
+    });
+  };
+
+  // Function to remove event from state
+  const removeEventFromState = (id) => {
+    setEventsData((prevData) => {
+      const updatedEvents = { ...prevData };
+      ['tasks', 'meetings', 'following_up'].forEach((category) => {
+        updatedEvents.Today[category] = updatedEvents.Today[category].filter((event) => event.id !== id);
+      });
+      return updatedEvents;
+    });
+  };
+
+  // Updated renderEventButtons function
   const renderEventButtons = (event) => (
     <div className="event-actions">
-      <button onClick={() => onUpdate(event)}>UPDATE</button>
-      <button onClick={() => handleFollowUp(event)}>FOLLOW UP</button>
-      <button onClick={() => handleCompleted(event)}>COMPLETED</button>
-      <button onClick={() => handleDelete(event.id)}>DELETE</button>
+     
+      {event.status !== 'Completed' && (
+        <>
+         <button onClick={() => onUpdate(event)}>UPDATE</button>
+          <button onClick={() => handleFollowUp(event)}>FOLLOW UP</button>
+          <button onClick={() => handleCompleted(event)}>COMPLETED</button>
+          <button onClick={() => handleDelete(event.id)}>DELETE</button>
+        </>
+      )}
+      {event.status === 'Completed' && event.approved !== 'Approved' && (
+        <button onClick={() => handleApprove(event.id)}>APPROVE</button>
+      )}
     </div>
   );
 
-  const renderEventTitle = (event) => {
-    return (
-      <>
-        {event.status === 'Completed' && (
-          <img src={tickIcon} alt="Completed" className="tick-icon" />
-        )}
-        {event.title}
-      </>
-    );
-  };
+  const renderEventTitle = (event) => (
+    <>
+      {event.status === 'Completed' && (
+        <img src={tickIcon} alt="Completed" className="tick-icon" />
+      )}
+      {event.title}
+      {event.approved === 'Approved' && (
+        <span className="approved-label"> (Approved)</span>
+      )}
+    </>
+  );
 
   // Ensure eventsData and Today exist before accessing tasks, meetings, etc.
   const { tasks = [], meetings = [], following_up = [] } = eventsData?.Today || {};
@@ -136,7 +211,7 @@ const RightSideBar = ({ isOpen, onUpdate, selectedDate, subUsername, superUserna
     <div className={`sidebar-container ${isOpen ? 'open' : ''}`}>
       <aside className="sidebar">
         <section>
-          <h3>Tasks for </h3> {/* Display the selectedDate */}
+          <h3>Tasks for {selectedDate}</h3>
           {tasks.map((task) => (
             <div key={task.id} className="event-item">
               <button

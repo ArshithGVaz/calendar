@@ -1,60 +1,91 @@
+/* cal.css */
 .calendar {
-  width: 100vw; /* Full viewport width */
-  height: calc(100vh - 50px); /* Full height minus navbar */
-  margin: 0; /* Remove any margin to fit perfectly */
+  width: 100%;
+  height: calc(100vh - 70px); /* Adjusted for navbar height */
+  margin: 0 auto; /* Center the calendar */
   display: flex;
-  flex-direction: column; /* Ensures structured layout */
+  flex-direction: column;
+  background-color: #f9fafb; /* Light background */
 }
 
 .header {
-  padding: 10px;
+  padding: 10px 20px;
   display: flex;
-  justify-content: space-around; /* Centers the select elements with space around */
-  background-color: #f4f4f4; /* Gives a distinct background */
-  width:20%;
+  justify-content: center;
+  align-items: center;
+  background-color: #fff;
+  width: 100%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header select {
+  margin: 0 10px;
+  padding: 5px;
+  font-size: 16px;
 }
 
 .day-names {
   display: flex;
-  background-color: #e4e4e4; /* Slightly different background for day names */
+  background-color: #e5e7eb;
 }
 
-
-
-
 .day-names .day-name {
-  flex: 1; /* Distributes space evenly among days */
+  flex: 1;
   text-align: center;
-  padding: 10px 0; /* Padding for better visual spacing */
+  padding: 10px 0;
+  font-weight: bold;
+  color: #374151;
 }
 
 .date-grid {
-  flex-grow: 1; /* Allows the date grid to fill available space */
+  flex-grow: 1;
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
 }
 
-.date-grid .empty-slot, .date-grid .date-button {
-  flex: 0 0 14.28%; /* Exact width to fit 7 across */
-  height: 12.5%; /* Each button will take up roughly 1/8th of the available height, fitting about 8 rows vertically */
+.date-grid .empty-slot,
+.date-grid .date-button {
+  flex: 0 0 14.28%;
+  height: 100px;
+  box-sizing: border-box;
 }
 
 .date-grid .date-button {
-  border: none;
-  background-color: #f0f0f0;
+  border: 1px solid #e5e7eb;
+  background-color: #fff;
   cursor: pointer;
   display: flex;
   justify-content: center;
-  border: 3px;
-  border-color: black;
-  align-items: center; /* Centers the date numerically */
-  transition: background-color 0.3s; /* Smooth transition for hover effect */
+  align-items: center;
+  transition: background-color 0.2s;
+  font-size: 16px;
+  color: #1f2937;
+  position: relative;
 }
-.date-button.today {
-  background-color: #0048ff ; /* Green background for today */
-  color: white; /* White text color for better visibility */
+
+.date-grid .date-button.today {
+  background-color: #3b82f6;
+  color: #fff;
 }
+
 .date-grid .date-button:hover {
-  background-color: #ddd;
+  background-color: #e0f2fe;
+}
+
+.date-grid .date-button::after {
+  content: '';
+  display: block;
+  padding-bottom: 100%;
+}
+
+.date-grid .empty-slot {
+  border: 1px solid transparent;
+}
+
+@media (max-width: 768px) {
+  .date-grid .empty-slot,
+  .date-grid .date-button {
+    height: 80px;
+  }
 }

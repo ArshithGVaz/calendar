@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './CEM.css';
 
-const CalendarEventModal = ({ isVisible, onClose, selectedDate, userid }) => {
+const AdminEventModal = ({ isVisible, onClose, selectedDate, userid }) => {
   const [eventDetails, setEventDetails] = useState({
     userid: '',  
     title: '',
@@ -9,17 +9,17 @@ const CalendarEventModal = ({ isVisible, onClose, selectedDate, userid }) => {
     url: '',
     notes: '',
     status: '',
+    repeat: 'No option'  // Added repeat state
   });
-  
-  console.log("CEM.jsx", selectedDate);
+  console.log("EventMosdal:", selectedDate);
 
 
   useEffect(() => {
     if (selectedDate && userid) {
-      console.log("CEM.jsx", selectedDate);
+      const formattedDate =selectedDate;
       setEventDetails(prev => ({
         ...prev,
-        date: selectedDate,
+        date: formattedDate,
         userid: userid
       }));
     }
@@ -34,31 +34,31 @@ const CalendarEventModal = ({ isVisible, onClose, selectedDate, userid }) => {
     e.preventDefault();
 
     const jsonObject = {
-      userid: eventDetails.userid,
-      title: eventDetails.title,
-      date: eventDetails.date,
-      url: eventDetails.url,
-      notes: eventDetails.notes,
-      status: eventDetails.status,
+        userid: eventDetails.userid,
+        title: eventDetails.title,
+        date: eventDetails.date,
+        url: eventDetails.url,
+        notes: eventDetails.notes,
+        status: eventDetails.status,
+        repeat: eventDetails.repeat,  // Include repeat field in the API request
     };
     
     try {
-      const response = await fetch('http://localhost:8000/events', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(jsonObject),
-      });
+        const response = await fetch('http://localhost:8000/events', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(jsonObject),
+        });
 
-      if (response.ok) {
-        // Reset form values after successful save
-        handleCancel();
-      } else {
-        console.error('Failed to create event');
-      }
+        if (response.ok) {
+            handleCancel(); // Reset form values after successful save
+        } else {
+            console.error('Failed to create event');
+        }
     } catch (error) {
-      console.error('Error creating event:', error);
+        console.error('Error creating event:', error);
     } finally {
       onClose();
     }
@@ -66,14 +66,7 @@ const CalendarEventModal = ({ isVisible, onClose, selectedDate, userid }) => {
 
   const handleCancel = () => {
     onClose();
-    setEventDetails({
-      userid: '',
-      title: '',
-      date: selectedDate,
-      url: '',
-      notes: '',
-      status: '',
-    });
+    setEventDetails(prev => ({ ...prev, title: '', repeat: 'No option' }));  // Reset repeat on cancel
   };
 
   if (!isVisible) return null;
@@ -118,6 +111,18 @@ const CalendarEventModal = ({ isVisible, onClose, selectedDate, userid }) => {
               onChange={handleChange}
             ></textarea>
           </div>
+          {/* Repeat dropdown integration */}
+          <div className="form-control">
+            <label>Repeat:</label>
+            <select name="repeat" value={eventDetails.repeat} onChange={handleChange}>
+              <option>No option</option>
+              <option>Daily</option>
+              <option>Weekly</option>
+              <option>Fortnightly</option>
+              <option>Monthly</option>
+              <option>Yearly</option>
+            </select>
+          </div>
           <div className="form-actions">
             <button type="button" onClick={handleCancel} className="cancel-button">
               Cancel
@@ -132,4 +137,4 @@ const CalendarEventModal = ({ isVisible, onClose, selectedDate, userid }) => {
   );
 };
 
-export default CalendarEventModal;
+export default AdminEventModal;

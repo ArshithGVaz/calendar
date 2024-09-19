@@ -30,9 +30,11 @@ const Calendar1 = ({ onDateClick, isToday }) => {
   const handleDateClick = (day) => {
     const date = new Date(selectedYear, selectedMonth, day);
     setSelectedDate(date);
+    console.log("cal.jsx:", date);
     setModalVisible(true);
     onDateClick(date);  // Pass date to parent component
   };
+  
 
   const closeModal = () => {
     setModalVisible(false);
@@ -81,7 +83,7 @@ const Calendar1 = ({ onDateClick, isToday }) => {
           </button>
         ))}
       </div>
-      {modalVisible && <CalendarEventModal isVisible={modalVisible} onClose={closeModal} selectedDate={selectedDate} />}
+      {/* {modalVisible && <CalendarEventModal isVisible={modalVisible} onClose={closeModal} selectedDate={selectedDate} />} */}
     </div>
   );
 };

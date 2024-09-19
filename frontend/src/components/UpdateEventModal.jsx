@@ -1,29 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import './CEM.css';
 
-const UpdateEventModal = ({ isVisible, onClose, eventDetails, subUsername, superUsername, userid }) => {
-  const [eventData, setEventData] = useState({
-    title: '',
-    date: '',
-    url: '',
-    notes: '',
-    userid: userid
-  });
+const UpdateEventModal = ({ isVisible, onClose, eventDetails }) => {
+  const [eventData, setEventData] = useState(eventDetails || {});
 
   useEffect(() => {
     if (eventDetails) {
-      setEventData({
-        title: eventDetails.title || '',
-        date: eventDetails.date || '',
-        url: eventDetails.url || '',
-        notes: eventDetails.notes || '',
-        priority: eventDetails.priority || 1,
-        subUsername: subUsername,
-        superUsername: superUsername,
-        userid: userid
-      });
+      setEventData(eventDetails);
     }
-  }, [eventDetails, subUsername, superUsername, userid]);
+  }, [eventDetails]);
+
+  const handleSave = async () => {
+    try {
+      const response = await fetch(`http://localhost:8000/events/${eventData.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(eventData),
+      });
+
+      if (response.ok) {
+        onClose(); // Close the modal on successful update
+      }
+    } catch (error) {
+      console.error('Error updating event:', error);
+    }
+  };
 
   if (!isVisible) return null;
 
